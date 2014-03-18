@@ -4,7 +4,7 @@ module ForemanSnapshot
 
     initializer 'foreman_snapshot.register_plugin', :after=> :finisher_hook do |app|
       Foreman::Plugin.register :foreman_snapshot do
-        requires_foreman '> 1.3'
+        requires_foreman '> 1.4'
       end
     end
 
@@ -18,6 +18,7 @@ module ForemanSnapshot
       ::Hostgroup.send :include, HostgroupExtensions
       ::ComputeResource.send :include, ComputeResourceExtensions
       ::Foreman::Model::Openstack.send :include, OpenstackExtensions
+      ::Foreman::Model::Libvirt.send :include, LibvirtExtensions
       ::Api::V2::HostgroupsController.send :include, ForemanSnapshot::Concerns::HostgroupsControllerExtension
     end
 

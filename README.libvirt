@@ -1,0 +1,26 @@
+You'll need 1.21.0 of Fog for `clone_volume`
+- update bundler.d/fog.rb
+
+Set up a compute profile for the temporary machine (say, 1Gb ram, 1Cpu, 1 net
+device, 5G disk)
+
+You'll want to send a request like this:
+
+```
+POST http://127.0.0.1:3000/api/v2/hostgroups/:id/snapshot
+
+{
+  "host": {
+    "compute_resource_id": 3,
+      "compute_profile_id": 1,
+      "compute_attributes": {
+        "image_id": "",
+        "image_ref": ""
+      }
+  }
+}
+```
+
+Unsetting the image id/ref is important.
+
+Enjoy
