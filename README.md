@@ -4,18 +4,29 @@
 A plugin to create images from Hostgroups
 
 | Supported Compute Resources |
-| ------------------ |
-| Openstack          |
+| --------------------------- |
+| [Openstack](#openstack)     |
+| [Libvirt](#libvirt)         |
 
 # Setup
 
-First configure [Foreman-Tasks](https://github.com/iNecas/foreman-tasks/)
+Add this plugin to the Gemfile, and restart Rails.
 
-Now add this plugin to the Gemfile as well, restart Rails, and send an API
-request like this:
+# Usage
+
+The plugin has no UI as yet, so send an API request to
+`/api/v2/hostgroups/:id/snapshot`. Replace :id with the hostgroup id as normal.
+See the sections below for examples for each compute resource.
+
+The request will block until complete (unless using [Dynflow &
+ForemanTasks](#optional-set-up-foreman-tasks), see below). This can take nearly
+10 minutes for something like Libvirt, so be patient.
+
+## Openstack
+
+Send an API request like this:
 
 ```
-POST /api/v2/hostgroups/:id/snapshot
 {
   "host": {
     "compute_resource_id": 7,
@@ -28,15 +39,44 @@ POST /api/v2/hostgroups/:id/snapshot
 }
 ```
 
-Replace the hostgroup :id in the URL, the flavor_ref, and the image_ref as required.
+## Libvirt
+
+For Libvirt you will need fog >= 1.21 for `clone_volume` support. Then send an API
+request like this:
+
+```
+{
+  "host": {
+    "compute_resource_id": 3,
+    "compute_profile_id": 1,
+    "compute_attributes": {
+      "image_id": "",
+      "image_ref": ""
+    }
+  }
+}
+```
+
+Unsetting the image id/ref is important, otherwise the VM may boot with a
+backing volume instead of doing a fresh PXE install. You could specify
+compute_attributes explicitly instead of using a compute profile.
+
+# Optional: Set up Foreman Tasks
+
+This plugin can use Dynflow & ForemanTasks to offload the slow process
+of building, configuring, and snapshotting the image.
+
+To use this, first configure [Foreman-Tasks](https://github.com/iNecas/foreman-tasks/)
+and then continue with the normal opertion.
 
 The API call should immediately return a Tasks id, and you should be
-able to view it in /foreman_tasks/tasks
+able to view it in /foreman_tasks/tasks.
 
 # TODO
 
 * More Compute Resources (ovirt, ec2, etc)
 * Add Tests
+* Add UI
 
 # Copyright
 

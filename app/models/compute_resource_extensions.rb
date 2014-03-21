@@ -5,4 +5,8 @@ module ComputeResourceExtensions
     raise _("Not implemented for this provider")
   end
 
+  def snapshot_status uuid
+    raise _("Not implemented for this provider")
+  end
+
 end

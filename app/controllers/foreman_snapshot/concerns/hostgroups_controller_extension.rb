@@ -23,8 +23,11 @@ module ForemanSnapshot
         end
       end
       def snapshot
+        # To avoid possible DNS conflicts with recent previous builds
+        # use a semi-random hostname
+        num = (Random.rand * 100 ).to_i
         hash = HashWithIndifferentAccess.new({
-          :name                => @hostgroup.name.downcase,
+          :name                => "#{@hostgroup.name.downcase}#{num}",
           :compute_resource_id => ::ComputeResource.first.id,
           :hostgroup_id        => @hostgroup.id,
           :build               => 1,
@@ -47,9 +50,22 @@ module ForemanSnapshot
           hash = HashWithIndifferentAccess.new({:compute_attributes => p.vm_attrs}).deep_merge(hash)
         end
         
-        task = ::ForemanTasks.async_task(::Actions::Foreman::Hostgroup::Snapshot, hash)
+        # Use Dynflow for webrick or other single-threaded servers as
+        # Snapshot needs to call Puppet while the host creation is still
+        # in progress (which could be a server-blocking action)
+        if defined? ForemanTasks
+          task = ::ForemanTasks.async_task(::Actions::Foreman::Hostgroup::Snapshot, hash)
+          render :json => {:task_id => task.id}, :status => 202
+        else
+          status = ::Hostgroup.snapshot!(hash)
+          logger.debug status.inspect
+          if status.nil?
+            render :json => {'message' => 'Foreman::Snapshot failed!'}, :status => 500
+          else
+            render :json => {'message' => "Foreman::Snapshot created #{status.name}"}, :status => 200
+          end
+        end
 
-        render :json => {:task_id => task.id}, :status => 202
       rescue ::Foreman::Exception => e
         render :json => {'message'=>e.to_s}, :status => :unprocessable_entity
       end

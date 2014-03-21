@@ -3,20 +3,28 @@ module HostgroupExtensions
 
   module ClassMethods 
     def snapshot!(host_hash)
-      # check if a host already exists, i.e. a snapshot is in progress already
-      # need to search without the domain
-      return true unless Host.where("name LIKE ?","#{host_hash[:name]}%").empty?
+      image = nil
 
-      if @host=::Host::Managed.create!(host_hash)
-        until @host.reload.build == false
-          logger.debug "Sleeping for host build state: #{@host.reload.build}"
-          sleep 10
+      # This could be run from Dynflow or directly, so we need
+      # to use uncached{} to be able to detect the change in build state
+      begin
+        if @host=::Host::Managed.create!(host_hash)
+          until @host.build == false
+            logger.debug "Sleeping for host build state: #{@host.build}"
+            sleep 10
+            # Reload cache for next sleep check
+            @host = uncached { Host.find(@host.id) }
+          end
+          logger.debug "Done waiting - #{@host.build}"
+          image = @host.snapshot!
+          raise unless @host.destroy
         end
-        @host = @host.reload
-        logger.debug "Done waiting - #{@host.build}"
-        @host.snapshot!
-        raise unless @host.destroy
+      rescue Exception => e
+        logger.debug e.message
+        raise e
       end
+
+      return image
     end
   end
 

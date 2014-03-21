@@ -8,9 +8,11 @@ module ForemanSnapshot
       end
     end
 
-    initializer "foreman_snapshot.register_actions" do |app|
-      ForemanTasks.dynflow.require!
-      ForemanTasks.dynflow.config.eager_load_paths.concat(%W[#{ForemanTasks::Engine.root}/app/lib/actions])
+    if defined? ForemanTasks
+      initializer "foreman_snapshot.register_actions" do |app|
+        ForemanTasks.dynflow.require!
+        ForemanTasks.dynflow.config.eager_load_paths.concat(%W[#{ForemanTasks::Engine.root}/app/lib/actions])
+      end
     end
 
     config.to_prepare do
