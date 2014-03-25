@@ -3,14 +3,28 @@
 
 A plugin to create images from Hostgroups
 
+## Installation
+
+Please see the Foreman wiki for appropriate instructions:
+
+* [Foreman: How to Install a Plugin](http://projects.theforeman.org/projects/foreman/wiki/How_to_Install_a_Plugin)
+
+The gem name is "foreman_snapshot".
+
+RPM users can install the "ruby193-rubygem-foreman_snapshot" or
+"rubygem-foreman_snapshot" packages. DEB users can install "ruby-foreman-snapshot"
+
+## Compatibility
+
+| Foreman Version | Plugin Version |
+| --------------- | --------------:|
+| <= 1.4          | not supported  |
+| >  1.4          | 0.1.0          |
+
 | Supported Compute Resources |
 | --------------------------- |
 | [Openstack](#openstack)     |
 | [Libvirt](#libvirt)         |
-
-# Setup
-
-Add this plugin to the Gemfile, and restart Rails.
 
 # Usage
 
@@ -19,7 +33,7 @@ The plugin has no UI as yet, so send an API request to
 See the sections below for examples for each compute resource.
 
 The request will block until complete (unless using [Dynflow &
-ForemanTasks](#optional-set-up-foreman-tasks), see below). This can take nearly
+ForemanTasks](#optional-set-up-foreman-tasks), see below). This can take over
 10 minutes for something like Libvirt, so be patient.
 
 ## Openstack
